@@ -1,4 +1,4 @@
 first use node version 16.17.0
-npm install -g yarn
-yarn install
-yarn start
+than npm install -g yarn
+than yarn install
+than yarn start
