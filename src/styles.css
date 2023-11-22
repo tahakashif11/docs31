@@ -1,0 +1,91 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: #eeeeee;
+  min-height: 100vh;
+}
+
+.wrapper {
+  font-family: sans-serif;
+  margin-left: 300;
+}
+.col-md-6 {
+  height: 50vh;
+  overflow-y: auto;
+}
+
+.ql-editor {
+  min-height: calc(100vh - 101px);
+  background-color: white;
+}
+
+.button-container {
+  display: flex;
+  gap: 10px;
+  margin: 10px 0;
+}
+
+.button-container button {
+  padding: 10px;
+  background-color: #007bff;
+  color: #ffffff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.button-container button:hover {
+  background-color: #0056b3;
+}
+button {
+  margin: 5px;
+  padding: 8px;
+  cursor: pointer;
+  border: none;
+  border-radius: 4px;
+  background-color: #4caf50;
+  color: white;
+}
+.main-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.content-container {
+  display: flex;
+  justify-content: center;
+}
+
+.editor-container {
+  display: flex;
+  width: 100%;
+}
+
+.comments-container {
+  width: 30%;
+  padding: 20px;
+  background-color: #f9f9f9;
+}
+
+.editor-wrapper {
+  width: 70%;
+  margin-left: 20px;
+}
+
+#comment-button {
+  background-color: green;
+}
+@import "../node_modules/@syncfusion/ej2-base/styles/material.css";
+@import "../node_modules/@syncfusion/ej2-buttons/styles/material.css";
+@import "../node_modules/@syncfusion/ej2-inputs/styles/material.css";
+@import "../node_modules/@syncfusion/ej2-popups/styles/material.css";
+@import "../node_modules/@syncfusion/ej2-lists/styles/material.css";
+@import "../node_modules/@syncfusion/ej2-navigations/styles/material.css";
+@import "../node_modules/@syncfusion/ej2-splitbuttons/styles/material.css";
+@import "../node_modules/@syncfusion/ej2-dropdowns/styles/material.css";
+@import "../node_modules/@syncfusion/ej2-react-documenteditor/styles/material.css";
