@@ -1,7 +1,20 @@
+import { useEffect, useState } from "react";
 import styles from "./DocumentCard.module.css";
 
-export default function ({ text, onClick, deleteHandler }) {
+export default function ({ text, onClick, deleteHandler, namei }) {
+  const [noname, saveNoName] = useState("");
+  
+
+  
+
   const createTitle = (text) => {
+    console.log(`this is text ${text}`)
+    console.log(`this is filename ${namei}`)
+   
+    if (namei ) {
+      return namei; // If name has a value, use it as the title
+    }
+
     if (text.replace(/<\/?[^>]+(>|$)/g, "")) {
       let parser = new DOMParser();
       const doc = parser.parseFromString(text, "text/html");
@@ -10,8 +23,10 @@ export default function ({ text, onClick, deleteHandler }) {
         doc.body.childNodes[0].innerHTML;
       return title.length > 10 ? `${title.slice(0, 10)}...` : title;
     }
+
     return "Untitled doc";
   };
+
   return (
     <div className={styles.wrapper} onClick={onClick}>
       <div

@@ -9,6 +9,7 @@
     "@syncfusion/ej2-react-documenteditor": "23.2.4",
     "automerge": "1.0.1-preview.7",
     "localforage": "1.10.0",
+    "lodash": "^4.17.21",
     "mammoth": "1.6.0",
     "quill": "1.3.7",
     "react": "18.0.0",

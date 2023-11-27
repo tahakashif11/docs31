@@ -40,6 +40,7 @@ export default function App() {
 
   // State variables
   const [editorVisible, setEditorVisible] = useState(false);
+  const [savefile,setsavefile]=useState("");
   const [editorValue, setEditorValue] = useState("");
   const [changeLog, setChangeLog] = useState([]);
   const [showChangeLog, setShowChangeLog] = useState(false);
@@ -89,28 +90,28 @@ export default function App() {
     }
   }, [navigate, docId]);
 
+ 
+
   // useEffect hook to initialize documents on component mount
   useEffect(() => {
     initDocuments();
   }, [initDocuments]);
 
-  // useEffect hook to log commentedValue for testing
-  useEffect(() => {
-    console.log("commentedValue is", commentedValue);
-  }, [commentedValue]);
-
-  // Function to add a new document
+ 
   const addDocument = () => {
     const id = uuidv4();
     let newDoc = Automerge.change(doc, (doc) => {
       setEditorValue("");
+      
       if (!doc.documents) doc.documents = [];
       doc.documents.push({
         id,
         text: editorValue,
         done: false,
+        namei:savefile,
         userId: getCurrentUserId(),
       });
+      
       navigate(`/${id}`);
     });
 
@@ -126,7 +127,8 @@ export default function App() {
 
     setShowChangeLog(true);
   };
-
+ 
+  
   // Function to load a document
   const loadDocument = useCallback(() => {
     if (docId) {
@@ -291,7 +293,7 @@ export default function App() {
     loadCommentedValues();
   }, []);
 
-  // Save commented values to LocalForage whenever commentedValue changes
+
   useEffect(() => {
     const saveCommentedValues = async () => {
       try {
@@ -304,8 +306,13 @@ export default function App() {
     saveCommentedValues();
   }, [commentedValue]);
 
-  // Function to handle file change (e.g., when uploading a .docx file)
+ 
+ 
+
+
   const handleFileChange = async (event) => {
+
+  
     const file = event.target.files[0];
 
     if (file) {
@@ -315,10 +322,14 @@ export default function App() {
         const content = e.target.result;
 
         try {
-          const { value } = await mammoth.extractRawText({
+          const { value } = await mammoth.convert({
             arrayBuffer: content,
           });
-          setEditorValue(value);
+
+          addDocumentFromFile(value);
+
+          
+
         } catch (error) {
           console.error("Error converting .docx to HTML:", error);
         }
@@ -328,7 +339,6 @@ export default function App() {
     }
   };
   const renderCommentedValues = (currentDocId) => {
-    // Render commented values only when editor is visible
     if (editorVisible) {
       const filteredComments = commentedValue.filter(comment =>
         comment.includes(`${currentDocId}`)
@@ -345,15 +355,73 @@ export default function App() {
         </div>
       );
     } else {
-      return null; // Return null if editor is not visible
+      return null; 
     }
   };
   const [selectedText, setSelectedText] = useState("");
   const quillRef = useRef(null);
+  const [saveAsExecuted, setSaveAsExecuted] = useState(false);
+  const [forceRender, setForceRender] = useState(false);
 
-  // ... (previous code)
 
-  // useEffect hook to set up the selection change callback
+  const SaveAs=()=>{
+        let prompt=window.prompt('please enter file name')
+        alert(`file save with name ${prompt}`)
+
+        
+        const updatedDoc = Automerge.change(doc, (doc) => {
+          const itemIndex = doc.documents.findIndex((item) => item.id === docId);
+          if (itemIndex !== -1) {
+            doc.documents[itemIndex].namei = prompt;
+          }
+        });
+      
+        let binary = Automerge.save(updatedDoc);
+        localforage.clear();
+        localforage.setItem("automerge-data", binary).catch((err) => console.log(err));
+        doc = updatedDoc;
+        setForceRender((prev) => !prev);
+
+
+        
+  }
+
+  addEventListener("popstate", () => {});
+  onpopstate = () => {
+    alert('auto saved succedfully')
+  };
+
+  const addDocumentFromFile = async (fileContent) => {
+    const id = uuidv4();
+    let newDoc = Automerge.change(doc, (doc) => {
+      if (!doc.documents) doc.documents = [];
+      doc.documents.push({
+        id,
+        text: fileContent,
+        done: false,
+        namei: savefile, // You can set a default name for the document
+        userId: getCurrentUserId(),
+      });
+
+      navigate(`/${id}`);
+    });
+
+    let binary = Automerge.save(newDoc);
+    localforage.clear();
+    localforage.setItem("automerge-data", binary).catch((err) => console.log(err));
+    doc = newDoc;
+
+    const changeText = `New document added: ${id} (by ${getCurrentUserId()})`;
+    setChangeLog((prevLog) => [...prevLog, changeText]);
+
+    setShowChangeLog(true);
+  };
+  
+  const debouncedHandleFileChange = useCallback(
+    debounce(handleFileChange, 500), // Adjust the debounce delay as needed
+    []
+  );
+
   useEffect(() => {
     if (editorVisible) {
       const quill = quillRef.current.getEditor();
@@ -376,15 +444,35 @@ export default function App() {
     }
   }, [editorVisible]);
 
-  // Return the JSX for the component
+
+
   return (
     <div className="wrapper">
       <Header
+      
         onClick={() => {
           setEditorVisible(false);
+          alert("auto saved succesfully");
           navigate("/");
         }}
+        
+        
       />
+      <div >
+      {!editorVisible && (
+        
+          
+          
+            <div >
+            <input type="file" onChange={handleFileChange} style={{background: 'rgb(70, 136, 70)',height:50,borderRadius:25,marginLeft:20,marginTop:20,width:60}} />
+            </div>
+          
+          
+        
+      )}
+    </div>
+      
+     
       <div className="main-content">
         {editorVisible && (
           <>
@@ -406,16 +494,13 @@ export default function App() {
               <div className="change-log">
                 <h3>Change Log:</h3>
                 <ul>
-                  {changeLog.length > 1 ? (
-                    <li key={changeLog.length - 1}>
+                  
+                      <button onClick={SaveAs}> Save As</button>
                       <button onClick={updateDocument}>Accept Changes</button>
                       <button onClick={updateDocument2}>Reject Changes</button>
-                    </li>
-                  ) : (
-                    changeLog.map((change, index) => (
-                      <li key={index}>{change}</li>
-                    ))
-                  )}
+                   
+                  
+                  
                 </ul>
               </div>
             )}
@@ -426,14 +511,16 @@ export default function App() {
       <div className="content-container">
       {commentedValue.length > 0 && renderCommentedValues(docId)}
 
-        {!editorVisible ? (
+        {!editorVisible && !saveAsExecuted? (
           <ContentWrapper>
             {Object.keys(doc).length !== 0 &&
               doc.documents.map((document, index) => {
                 return (
+                  
                   <DocumentCard
                     key={index}
                     text={document.text}
+                    namei={document.namei}
                     onClick={() => {
                       setEditorVisible(true);
                       navigate(`/${document.id}`);
@@ -443,15 +530,24 @@ export default function App() {
                       e.stopPropagation();
                       deleteDocument(document.id);
                     }}
+                    forceRender={forceRender}
+
                   />
-                );
-              })}
+                )
+        })}
             <AddButton
               onClick={() => {
                 setEditorVisible(true);
                 addDocument();
               }}
+              
             />
+            
+            
+            
+            
+            
+            
           </ContentWrapper>
         ) : (
           <div>
